@@ -1,25 +1,21 @@
 pipeline {
     agent any
 
+    environment {
+        DOCKER_IMAGE = "node-app"
+        DOCKER_TAG = "latest"
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/zoya9545-web/node-app.git',
-                    credentialsId: '6404498d-ac8d-4f2e-be03-4e9a3fcd2c65'
+                    credentialsId: '6404498d-ac8d-4f2e-be03-4e9a3fcd2c65',
+                    url: 'https://github.com/zoya9545-web/node-app.git'
             }
         }
 
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
-            }
-        }
-
-        stage('Build Complete') {
-            steps {
-                echo 'Build finished successfully!'
-            }
-        }
-    }
-}
