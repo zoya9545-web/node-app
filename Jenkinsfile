@@ -19,3 +19,19 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+            }
+        }
+
+        stage('Run Docker Container') {
+            steps {
+                sh "docker run -d -p 3000:3000 --name node-container ${DOCKER_IMAGE}:${DOCKER_TAG}"
+            }
+        }
+    }
+}
