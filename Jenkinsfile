@@ -1,13 +1,10 @@
 pipeline {
     agent any
-
     environment {
-        DOCKER_IMAGE = "node-app"
+        DOCKER_IMAGE = "zoya9545/node-app"
         DOCKER_TAG = "latest"
     }
-
     stages {
-
         stage('Checkout') {
             steps {
                 git branch: 'main',
@@ -15,22 +12,35 @@ pipeline {
                     url: 'https://github.com/zoya9545-web/node-app.git'
             }
         }
-
         stage('Install Dependencies') {
             steps {
                 sh 'npm install'
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
             }
         }
-
-        stage('Run Docker Container') {
+        stage('Docker Login') {
             steps {
-                sh "docker run -d -p 3000:3000 --name node-container ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                withCredentials([usernamePassword(
+                    credentialsId: 'docker-hub-cred',
+                    usernameVariable: 'DOCKER_USER',
+                    passwordVariable: 'DOCKER_PASS'
+                )]) {
+                    sh "echo \$DOCKER_PASS | docker login -u \$DOCKER_USER --password-stdin"
+                }
+            }
+        }
+        stage('Push Docker Image') {
+            steps {
+                sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+            }
+        }
+        stage('Build Complete') {
+            steps {
+                echo "Pipeline finished successfully!"
             }
         }
     }
