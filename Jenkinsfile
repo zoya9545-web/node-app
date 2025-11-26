@@ -1,16 +1,14 @@
 pipeline {
     agent any
-    environment {
-        DOCKER_IMAGE = "zoya9545/node-app"
-        DOCKER_TAG = "latest"
-    }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main',
-                    credentialsId: '6404498d-ac8d-4f2e-be03-4e9a3fcd2c65',
-                    url: 'https://github.com/zoya9545-web/node-app.git'
+                git(
+                    url: 'https://github.com/zoya9545-web/node-app.git',
+                    branch: 'main',
+                    credentialsId: 'github-creds'
+                )
             }
         }
 
@@ -22,21 +20,21 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                sh 'docker build -t zoya9545/node-app:latest .'
             }
         }
 
         stage('Docker Login') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'USER', passwordVariable: 'PASS')]) {
-                    sh "echo $PASS | docker login -u $USER --password-stdin"
+                withCredentials([usernamePassword(credentialsId: 'docker-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                sh 'docker push zoya9545/node-app:latest'
             }
         }
     }
