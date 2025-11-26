@@ -1,7 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        IMAGE_NAME = "zoya9545/node-app:latest"
+    }
+
     stages {
+
         stage('Checkout') {
             steps {
                 git(
@@ -20,23 +25,29 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t zoya9545/node-app:latest .'
+                sh 'docker build -t $IMAGE_NAME .'
             }
         }
 
         stage('Docker Login') {
             steps {
-                withCredentials([usernamePassword(credentialsId: 'docker-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS')]) {
-                        sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'docker-creds',
+                        usernameVariable: 'DOCKER_USER',
+                        passwordVariable: 'DOCKER_PASS'
+                    )
+                ]) {
+                    sh '''
+                        echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin
+                    '''
                 }
             }
         }
 
         stage('Push Docker Image') {
             steps {
-                sh 'docker push zoya9545/node-app:latest'
+                sh 'docker push $IMAGE_NAME'
             }
         }
     }
