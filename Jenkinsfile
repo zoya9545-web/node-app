@@ -50,5 +50,21 @@ pipeline {
                 sh 'docker push $IMAGE_NAME'
             }
         }
+
+        stage('Deploy') {
+            steps {
+                sh '''
+                    echo "Stopping old container if exists..."
+                    docker stop node-app || true
+                    docker rm node-app || true
+
+                    echo "Pulling latest image..."
+                    docker pull zoya9545/node-app:latest
+
+                    echo "Starting new container..."
+                    docker run -d -p 3000:3000 --name node-app zoya9545/node-app:latest
+                '''
+            }
+        }
     }
 }
